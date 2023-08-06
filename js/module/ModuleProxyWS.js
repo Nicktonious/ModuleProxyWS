@@ -57,7 +57,7 @@ class ProxyWS {
     Receive(_data, _key) {
         let obj = null;
         try {
-            obj = JSON.parse(_data);
+            obj = JSON.parse(_datak);
         } catch (e) {
             throw new err('Incorrect JSON data');
         }
@@ -91,7 +91,6 @@ class ProxyWS {
         let data = this.FormPackREPL(msg);
         data.MetaData.CRC = E.CRC32(JSON.stringify(data)); //расчет чексуммы
         this._WSS.Notify(data);         //отправка на WS Server
-        
     }
     /**
      * @method 
@@ -123,9 +122,6 @@ class ProxyWS {
             },
             "Value": msg
         });
-        let crc = E.CRC32(JSON.stringify(pack));
-        pack.MetaData.CRC = crc;
-        return pack;
     }
     /**
      * @typedef {Object} SensorMsg
@@ -157,9 +153,6 @@ class ProxyWS {
             },
             "Value": msg
         });
-        let crc = E.CRC32(JSON.stringify(pack));
-        pack.MetaData.CRC = crc;
-        return pack;
     }
 }
 exports = ProxyWS;

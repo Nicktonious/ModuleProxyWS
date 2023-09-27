@@ -10,8 +10,6 @@ class ProxyWS {
      */
     constructor(_wss) {
         this._WSS = _wss;
-        this._Queue = [];
-        this.name = 'ProxyWS';
         this._SubID = {}; //{'MAS-1000': 'hfehklvhelv'}      
 
         Object.on('repl-sub', (id, key) => {
@@ -154,5 +152,6 @@ class ProxyWS {
             "Value": msg
         });
     }
+    FormPackSensor(msg) { return {}; }
 }
 exports = ProxyWS;

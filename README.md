@@ -7,9 +7,16 @@
 # Описание
 <div style = "font-family: 'Open Sans', sans-serif; font-size: 16px; color: #555">
 
-ModuleProxyWS - один из модулей, обеспечивающий коммуникацию между автономной платформой и внешней средой в рамках фреймворка EcoLight. 
+ModuleProxyWS - модуль, являющийся частью фреймворка Ecolight и предназначенный для обеспечения обмена сообщениями между службами (RouteREPL, Sensor и т.д) и Websocket сервером. 
 Представляет из себя не самостоятельное звено, а прокси (прослойку) к объекту [**ClassWSServer**](https://github.com/Konkery/ModuleWebSocketServer/blob/main/README.md) (далее - WSS), которая управляет двунаправленным обменом данными между **WSS** и службами *RouteREPL*, *Sensor*, *Process*.
-Перехваченные сообщения упаковывает либо распаковывает в соотвтетствии с протоколом [LHP](https://github.com/Konkery/ModuleLHP/blob/main/README.md) (Light Horizon Protocol), который включает проверку чексуммы входящего сообщения с чексуммой, переданной в пакете.
+Обмен сообщениями со службой построен на событийной модели, а взаимодействие с **WSS** происходит напрямую. 
+Собственно модуль выполняет две операции:
+- Перехватывает сообщения от служб и "упаковывает" их в JSON-строку в соответствии с протоколом [**LHP**](https://github.com/Konkery/ModuleLHP/blob/main/README.md) (Light Horizon Protocol) и отправляет на **WSS**.  
+- Принимает JSON-строки от **WSS**, извлекает и маршрутизирует переданные команды. Перед извлечением команд идёт проверка целостности полученного сообщения: **ProxyWS** сверяет фактическую чексумму сообщения с чексуммой, переданной в JSON-пакете.
+
+<div align='center'>
+    <img src='./res/interaction.png'>
+</div>
 
 ### **Конструктор**
 Объект создается исключительно в качестве значения поля *proxy* в **ClassWSServer**, его конструктор принимает ссылку на *WSS*, в котором иницализируется:
@@ -46,10 +53,10 @@ this.proxy = new ProxyWS(this);
 ### **Примеры**
 Распаковка сообщения, входящего с WSS:
 ```js
-//data - JSON-паукт в виде строки
+//data - JSON-пакет в виде строки
 Receive(_data, _key) {
     ...
-    obj = JSON.parse(_datak);
+    obj = JSON.parse(_data);
     ...
     //чексумма, полученная из пакета
     let meta_crc = obj.MetaData.CRC;    
@@ -78,3 +85,6 @@ Receive(_data, _key) {
 
 Как указано выше, модуль не является самостоятельным, а потому не используется пользователем напрямую.  
 </div>
+
+### **Зависимости**
+- <mark style="background-color: lightblue">[**ClassWSServer**](https://github.com/Konkery/ModuleWebSocketServer/blob/main/README.md)</mark> (неявно). 

@@ -32,7 +32,7 @@ this.proxy = new ProxyWS(this);
 - <mark style="background-color: lightblue">_SubID</mark> - объект типа { id : sec-ws-key }.
 
 ### **События**
-События, которые модуль обрабатывает уповещая *_WSS* о появлении нового подписчика на соответствующую службу:
+События, которые модуль обрабатывает оповещая *_WSS* о появлении нового подписчика на соответствующую службу:
 - <mark style="background-color: lightblue">Object.on(repl-sub)</mark> 
 - <mark style="background-color: lightblue">Object.on(sensor-sub)</mark> 
 - <mark style="background-color: lightblue">Object.on(process-sub)</mark> 

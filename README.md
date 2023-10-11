@@ -32,15 +32,13 @@ this.proxy = new ProxyWS(this);
 - <mark style="background-color: lightblue">_SubID</mark> - объект типа { id : sec-ws-key }.
 
 ### **События**
-События, которые модуль обрабатывает оповещая *_WSS* о появлении нового подписчика на соответствующую службу:
-- <mark style="background-color: lightblue">Object.on(repl-sub)</mark> 
-- <mark style="background-color: lightblue">Object.on(sensor-sub)</mark> 
-- <mark style="background-color: lightblue">Object.on(process-sub)</mark> 
-
-События, которые модуль обрабатывает перехватывая сообщение от одной из служб, после чего инициирует отправку этих данных на *_WSS* по LHP-протоколу:
-- <mark style="background-color: lightblue">Object.on(repl-read)</mark>
-- <mark style="background-color: lightblue">Object.on(sensor-read)</mark>
-- <mark style="background-color: lightblue">Object.on(process-read)</mark>
+Модуль подписан на следующие события: 
+- <mark style="background-color: lightblue">repl-sub</mark> - новый подписчик на контент службы RouteREPL;
+- <mark style="background-color: lightblue">repl-read</mark> - сообщение от службы RouteREPL;
+- <mark style="background-color: lightblue">sensor-sub</mark> - новый подписчик на контент службы Sensor;
+- <mark style="background-color: lightblue">sensor-read</mark> - сообщение от службы Sensor;
+- <mark style="background-color: lightblue">process-sub</mark> - новый подписчик на контент службы Process.
+- <mark style="background-color: lightblue">process-read</mark> - сообщение от службы Process.
 
 ### **Методы**
 - <mark style="background-color: lightblue">Receive(_data, _key)</mark> - метод, который вызывается извне (со стороны *WSS*) для отправки команд;
@@ -48,7 +46,7 @@ this.proxy = new ProxyWS(this);
 - <mark style="background-color: lightblue">RemoveSub(key)</mark> - метод удаляет подписчика из коллекции *_SubID* по указанному ключу;
 - <mark style="background-color: lightblue">FormPackREPL(msg)</mark> - формирует объект из сообщения, полученного от службы REPL согласно LHP-протоколу;
 - <mark style="background-color: lightblue">FormPackSensor(msg)</mark> - формирует объект из сообщения, полученного от службы Sensor согласно LHP-протоколу;
-- <mark style="background-color: lightblue">FormPackProcess(msg)</mark> - формирует объект из сообщения, полученного от службы Process согласно LHP-протоколу;
+- <mark style="background-color: lightblue">FormPackProcess(msg)</mark> - формирует объект из сообщения, полученного от службы Process согласно LHP-протоколу.
 
 ### **Примеры**
 Распаковка сообщения, входящего с WSS:

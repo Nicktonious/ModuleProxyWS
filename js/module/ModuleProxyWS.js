@@ -55,7 +55,7 @@ class ProxyWS {
     Receive(_data, _key) {
         let obj = null;
         try {
-            obj = JSON.parse(_datak);
+            obj = JSON.parse(_data);
         } catch (e) {
             throw new err('Incorrect JSON data');
         }

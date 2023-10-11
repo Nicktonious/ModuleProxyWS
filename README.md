@@ -81,8 +81,6 @@ Receive(_data, _key) {
 }
 ```
 
-Как указано выше, модуль не является самостоятельным, а потому не используется пользователем напрямую.  
-</div>
+### Зависимости
 
-### **Зависимости**
-- <mark style="background-color: lightblue">[**ClassWSServer**](https://github.com/Konkery/ModuleWebSocketServer/blob/main/README.md)</mark> (неявно). 
+</div>

@@ -33,7 +33,7 @@
 ```js
 //внутри конструктора WSS
 ...
-this.proxy = new ClassProxyWS(this);
+this._Proxy = new ClassProxyWS(this);
 ...
 ```
 </div>

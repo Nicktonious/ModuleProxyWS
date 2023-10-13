@@ -11,7 +11,7 @@
 Представляет из себя не самостоятельное звено, а прокси-прослойку к объекту класса [**ClassWSServer**](https://github.com/Konkery/ModuleWebSocketServer/blob/main/README.md) (далее - WSS), которая управляет двунаправленным обменом данными между **WSS** и службами *RouteREPL*, *Sensor* и т.д
 Обмен сообщениями со службой построен на событийной модели, а взаимодействие с **WSS** происходит напрямую. 
 Собственно модуль выполняет две операции:
-- Перехватывает сообщения от служб и упаковывает их в JSON-строку в соответствии с протоколом [**LHP**](https://github.com/Konkery/ModuleLHP/blob/main/README.md) (Light Horizon Protocol) и отправляет на **WSS**.  
+- Перехватывает сообщения от служб и "упаковывает" их в JSON-строку в соответствии с протоколом [**LHP**](https://github.com/Konkery/ModuleLHP/blob/main/README.md) (Light Horizon Protocol) и отправляет на **WSS**.  
 - Принимает JSON-строки от **WSS**, извлекает и маршрутизирует переданные команды. Перед извлечением команд идёт проверка целостности полученного сообщения: **ProxyWS** сверяет фактическую чексумму сообщения с чексуммой, переданной в JSON-пакете.
 
 <div align='center'>
@@ -47,7 +47,7 @@ this.proxy = new ClassProxyWS(this);
 - <mark style="background-color: lightblue">RemoveSub(key)</mark> - удаляет подписчика из коллекции *_SubID* по указанному ключу;
 - <mark style="background-color: lightblue">FormPackREPL(msg)</mark> - формирует объект из сообщения, полученного от службы REPL согласно LHP-протоколу;
 - <mark style="background-color: lightblue">FormPackSensor(msg)</mark> - формирует объект из сообщения, полученного от службы Sensor согласно LHP-протоколу;
-- <mark style="background-color: lightblue">FormPackProcess(msg)</mark> - формирует объект из сообщения, полученного от службы Process согласно LHP-протоколу;
+- <mark style="background-color: lightblue">FormPackProcess(msg)</mark> - формирует объект из сообщения, полученного от службы Process согласно LHP-протоколу.
 
 ### Примеры
 Распаковка сообщения, входящего с WSS:
@@ -82,7 +82,9 @@ Receive(_data, _key) {
 }
 ```
 
+### Зависимости
+
 </div>
 
-### Зависимости
+### **Зависимости**
 - <mark style="background-color: lightblue">[**ClassWSServer**](https://github.com/Konkery/ModuleWebSocketServer/blob/main/README.md)</mark> (неявно). 

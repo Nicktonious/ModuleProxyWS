@@ -10,47 +10,62 @@ class ProxyWS {
      */
     constructor(_wss) {
         this._WSS = _wss;
-        this._SubID = {}; //{'MAS-1000': 'hfehklvhelv'}      
+        this._SubID = {}; //{'MAS-1000': 'some-hash-key'} 
+        // this._Subs = {};     
 
+        /************************************* SUB EVENTS **********************************/
         Object.on('repl-sub', (id, key) => {
-            this._WSS.clients.filter(client => client.key.hashed === key).forEach(client => {
+            this._WSS._Clients.filter(client => client.key.hashed === key).forEach(client => {
                 if (!client.RegServices.includes('repl')) client.RegServices.push('Repl');
             });
 
             if (!(this._SubID[id])) this._SubID[id] = key;
         });
         Object.on('sensor-sub', (id, key) => {
-            this._WSS.clients.filter(client => client.key.hashed === key).forEach(client => {
+            this._WSS._Clients.filter(client => client.key.hashed === key).forEach(client => {
                 if (!client.RegServices.includes('sensor')) client.RegServices.push('Sensor');
             });
 
             if (!(this._SubID[id])) this._SubID[id] = key;
         });   
         Object.on('process-sub', (id, key) => {
-            this._WSS.clients.filter(client => client.key.hashed === key).forEach(client => {
+            this._WSS._Clients.filter(client => client.key.hashed === key).forEach(client => {
                 if (!client.RegServices.includes('process')) client.RegServices.push('Process');
             });
 
             if (!(this._SubID[id])) this._SubID[id] = key;
         });
-
+        /************************************* READ EVENTS **********************************/
         Object.on('repl-read', msg => {         //обработка события repl-read перехватом сообщения от REPL 
-            this.Send(msg);   
+            let data = this.LHPifyReplMsg(msg);
+            this.Send(data);   
         });
 
-        Object.on('sensor-read', msg => {
-            this.Send(msg);
+        Object.on('sensor-data', data => {
+
+            Object.keys(data).forEach(channelID => {
+                this.Send(this.LHPifySensorData(channelID, data[channelID]));
+            });
+        });
+
+        Object.on('sensor-info', infoArr => {
+            infoArr.forEach(sensorInfo => {
+                this.Send(this.LHPifySensorInfo(sensorInfo));
+            });
         });
 
         Object.on('process-read', msg => {
             return;
         });
     }
+    TestReceive(msg) {
+        Object.emit(msg.com, msg.arg);
+    }
     /**
      * @method 
      * Вызывается извне (со стороны WS) для передачи команд
-     * @param {String} _data -  JSON пакет с командами в виде строки
-     * @param {String} [key] - ключ с которым WSS ассоциирует отправителя
+     * @param {String} _data - JSON пакет с командами в виде строки
+     * @param {String} _key - ключ с которым WSS ассоциирует отправителя
      */
     Receive(_data, _key) {
         let obj = null;
@@ -67,32 +82,26 @@ class ProxyWS {
         let actual_crc = E.CRC32(JSON.stringify(obj));  //фактическая чексумма
 
         if (actual_crc === meta_crc) {  //если фактический CRC полученного пакета сходится с CRC зашитым в пакет
-            let flag = true;
 
-            obj.MetaData.Command.forEach(comObj => {   //перебор объектов { "com": 'String', "arg": [] }
-                if (flag) {
-                    if (comObj.com.endsWith('sub') || comObj.com.endsWith('cm')) {
-                        Object.emit(comObj.com, obj.MetaData.ID, key);
-                        flag = false;
-                    }
-                    else Object.emit(comObj.com, comObj.arg, obj.MetaData.ID);
-                }
-            }); 
+            let comObj = obj.MetaData.Command[0];   //первый объект { "com": 'String', "arg": [] }
+            if (comObj.com.endsWith('sub') || comObj.com.endsWith('cm')) {
+                Object.emit(comObj.com, obj.MetaData.ID, key);
+            }
+            else Object.emit(comObj.com, comObj.arg, obj.MetaData.ID);
         }
     }
     /**
      * @method
-     * Отправляет сообщение в виде JSON-строки в WS Server
+     * Отправляет сообщение в виде JSON-строки на WS Server
      * @param {String} data сообщение 
      */
-    Send(msg) { 
-        let data = this.FormPackREPL(msg);
+    Send(data) { 
         data.MetaData.CRC = E.CRC32(JSON.stringify(data)); //расчет чексуммы
         this._WSS.Notify(data);         //отправка на WS Server
     }
     /**
      * @method 
-     * Удаление подписчика из коллекции по ключу
+     * Удаление подписчика из коллекции по ключу. Метод вызывается исключительно объектом WS
      * @param {String} key 
      */
     RemoveSub(key) {
@@ -107,7 +116,7 @@ class ProxyWS {
      * @param {String} msg 
      * @returns {Object}
      */
-    FormPackREPL(msg) {
+    LHPifyReplMsg(msg) {
         return ({
             "MetaData": {
                 "Type": "controller",
@@ -122,36 +131,63 @@ class ProxyWS {
         });
     }
     /**
-     * @typedef {Object} SensorMsg
-     * @property {String} name
-     * @property {Number} value
+     @typedef SensorInfo
+     @property {string} ID,
+     @property {string} _Name
+     @property {string} _Type
+     @property {string} _TypeOutSignal
+     @property {string} _TypeInSignal
+     @property {string} _ChannelNames
+     @property {string} _NumPortsRequired
+     @property {Number} _QuantityChannel     
+     @property {string} _BusTypes    
      */
     /**
      * @method
-     * Метод формирует пакет из данных, полученных от Sensor модуля 
-     * @param {SensorMsg} msg 
+     * Метод формирует с информацией о датчике из данных, полученных от SensorManager 
+     * @param {SensorInfo} sensorInfo 
+     * @returns 
      */
-    FormPackSensor(msg) {
+    LHPifySensorInfo(sensorInfo) {
         return ({
-            "MetaData":{
-                "Type":'controller',
+            "MetaData": {
+                "Type": "controller",
                 "ID": process.env.SERIAL,
                 "TimeStamp2": getTime(),
-                "RegServices": "Sensor",
                 "Sensor": {
-                    "ID": '54-54',
-                    "Name": "Vova",
-                    "Type": "meas",
-                    "TypeOutSignal": "analog",
-                    "TypeInSignal":  "analog",
-                    "NumPortsRequired": [1],
-                    "NumChannel":       1,
-                    "Bus":              ["i2c"]
-                }
+                    "com": "get-info",
+                    "arg": []
+                },
+                "RegServices": "Sensor"
             },
-            "Value": msg
+            "Value": JSON.stringify(sensorInfo)
         });
     }
-    FormPackSensor(msg) { return {}; }
+    /**
+     * @typedef {Object} SensorData
+     * @property {string} ID
+     * @property {Number} Value 
+     */
+    /**
+     * @method
+     * Метод формирует пакет из данных, полученных от SensorManager
+     * @param {SensorData} sensorData 
+     */
+    LHPifySensorData(id, value) {
+        return ({
+            "MetaData": {
+                "Type": "controller",
+                "ID": process.env.SERIAL,
+                "TimeStamp2": getTime(),
+                "Sensor": {
+                    "ID": id,
+                    "com": "start-polling",
+                    "arg": []
+                },
+                "RegServices": "Sensor"
+            },
+            "Value": value
+        });
+    }
 }
 exports = ProxyWS;
